@@ -1,0 +1,96 @@
+erDiagram
+    CLIENTE ||--o{ VEICULO : "id_cliente"
+    MARCA ||--|{ MODELO : "id_marca"
+    MODELO ||--o{ VEICULO : "id_modelo"
+    VEICULO ||--o{ ORDEM_SERVICO : "id_veiculo"
+    MECANICO ||--o{ ORDEM_SERVICO : "id_mecanico"
+    ORDEM_SERVICO ||--|| VISTORIA : "id_os (UNIQUE)"
+    ORDEM_SERVICO ||--|{ OS_SERVICO : "id_os"
+    SERVICO ||--o{ OS_SERVICO : "id_servico"
+    ORDEM_SERVICO ||--o{ OS_PECA : "id_os"
+    PECA ||--o{ OS_PECA : "id_peca"
+    ORDEM_SERVICO ||--o{ PARCELA_PAGAMENTO : "id_os"
+
+    CLIENTE {
+        SERIAL id_cliente PK
+        VARCHAR(100) nome "NOT NULL"
+        CHAR(11) cpf UK "NOT NULL"
+        VARCHAR(15) telefone "NOT NULL"
+        VARCHAR(100) email UK
+        DATE data_cadastro "DEFAULT CURRENT_DATE"
+    }
+    MARCA {
+        SERIAL id_marca PK
+        VARCHAR(50) nome UK "NOT NULL"
+    }
+    MODELO {
+        SERIAL id_modelo PK
+        VARCHAR(50) nome "NOT NULL, UNIQUE com id_marca"
+        INT id_marca FK "NOT NULL"
+    }
+    VEICULO {
+        SERIAL id_veiculo PK
+        CHAR(7) placa UK "NOT NULL"
+        INT ano "CHECK 1950-2100"
+        VARCHAR(30) cor
+        INT id_modelo FK "NOT NULL"
+        INT id_cliente FK "NOT NULL"
+    }
+    MECANICO {
+        SERIAL id_mecanico PK
+        VARCHAR(100) nome "NOT NULL"
+        CHAR(11) cpf UK "NOT NULL"
+        VARCHAR(50) especialidade "NOT NULL"
+        DATE data_admissao "NOT NULL"
+        BOOLEAN ativo "DEFAULT TRUE"
+    }
+    SERVICO {
+        SERIAL id_servico PK
+        VARCHAR(100) descricao UK "NOT NULL"
+        DECIMAL valor_mao_obra "(10,2) CHECK >= 0"
+        INT tempo_estimado "CHECK > 0"
+    }
+    PECA {
+        SERIAL id_peca PK
+        VARCHAR(20) codigo UK "NOT NULL"
+        VARCHAR(100) nome "NOT NULL"
+        DECIMAL preco_venda "(10,2) CHECK >= 0"
+        INT qtd_estoque "DEFAULT 0, CHECK >= 0"
+    }
+    ORDEM_SERVICO {
+        SERIAL id_os PK
+        DATE data_abertura "DEFAULT CURRENT_DATE"
+        DATE data_conclusao "CHECK >= data_abertura"
+        VARCHAR(20) status "DEFAULT aberta, CHECK lista"
+        INT km_entrada "CHECK >= 0"
+        INT id_veiculo FK "NOT NULL"
+        INT id_mecanico FK "NOT NULL"
+    }
+    VISTORIA {
+        SERIAL id_vistoria PK
+        VARCHAR(10) nivel_combustivel "CHECK lista"
+        VARCHAR(255) avarias
+        BOOLEAN possui_estepe "DEFAULT TRUE"
+        TIMESTAMP data_hora "DEFAULT CURRENT_TIMESTAMP"
+        INT id_os FK, UK "NOT NULL"
+    }
+    OS_SERVICO {
+        INT id_os PK, FK
+        INT id_servico PK, FK
+        INT quantidade "DEFAULT 1, CHECK > 0"
+        DECIMAL valor_cobrado "(10,2) CHECK >= 0"
+    }
+    OS_PECA {
+        INT id_os PK, FK
+        INT id_peca PK, FK
+        INT quantidade "CHECK > 0"
+        DECIMAL preco_unitario "(10,2) CHECK >= 0"
+    }
+    PARCELA_PAGAMENTO {
+        INT id_os PK, FK
+        INT numero_parcela PK "chave parcial"
+        DECIMAL valor "(10,2) CHECK > 0"
+        DATE data_vencimento "NOT NULL"
+        DATE data_pagamento
+        VARCHAR(20) forma_pagamento "CHECK lista"
+    }
